@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"testing"
+	"time"
 )
 
 func BenchmarkSocket(b *testing.B) {
@@ -94,9 +95,14 @@ func BenchmarkSocket(b *testing.B) {
 				defer s.Close()
 
 				b.Run(name, func(b *testing.B) {
+					totalBytes := int64(0)
+					start := time.Now()
+					b.ResetTimer()
 					for i := 0; i < b.N; i++ {
 						br.Seek(0, 0)
 						nbytes, err := io.Copy(s, br)
+
+						totalBytes += nbytes
 
 						if err != nil {
 							b.Fatal(err)
@@ -105,6 +111,13 @@ func BenchmarkSocket(b *testing.B) {
 							b.Fatalf("copied %d of expected %d bytes", nbytes, size)
 						}
 					}
+
+					// compute and report "throughput" in bytes/second.
+					seconds := float64(time.Since(start)) / 1000000000
+					b.ReportMetric(float64(totalBytes)/seconds, "bytes/s")
+
+					// report total number of bytes transferred for this test
+					b.ReportMetric(float64(totalBytes), "bytes")
 				})
 			})
 		}
