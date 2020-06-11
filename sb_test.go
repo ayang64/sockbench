@@ -113,8 +113,8 @@ func BenchmarkSocket(b *testing.B) {
 					}
 
 					// compute and report "throughput" in bytes/second.
-					seconds := float64(time.Since(start)) / float64(time.Second)
-					b.ReportMetric(float64(totalBytes)/seconds, "bytes/s")
+					seconds := time.Since(start) / time.Second
+					b.ReportMetric(float64(totalBytes)/float64(seconds), "bytes/s")
 
 					// report total number of bytes transferred for this test
 					b.ReportMetric(float64(totalBytes), "bytes")
